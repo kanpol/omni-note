@@ -5,15 +5,14 @@ import it.feio.android.omninotes.models.ONStyle;
 import it.feio.android.omninotes.models.listeners.OnDrawChangedListener;
 import it.feio.android.omninotes.models.views.SketchView;
 import it.feio.android.omninotes.utils.Constants;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -35,14 +34,12 @@ import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-
 import com.google.analytics.tracking.android.Fields;
 import com.google.analytics.tracking.android.MapBuilder;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.ColorPicker.OnColorChangedListener;
 import com.larswerkman.holocolorpicker.OpacityBar;
 import com.larswerkman.holocolorpicker.SVBar;
-
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 
 public class SketchFragment extends Fragment implements OnDrawChangedListener{
@@ -60,6 +57,7 @@ public class SketchFragment extends Fragment implements OnDrawChangedListener{
 	private int size;
 	private ColorPicker mColorPicker;
 	private int oldColor;
+	private OpacityBar opacityBar;
 
 	
 	@Override
@@ -225,11 +223,22 @@ public class SketchFragment extends Fragment implements OnDrawChangedListener{
 		// Stroke color picker initialization and event managing
 		mColorPicker = (ColorPicker) popupLayout.findViewById(R.id.stroke_color_picker);	
 		mColorPicker.addSVBar((SVBar) popupLayout.findViewById(R.id.svbar));	
-		mColorPicker.addOpacityBar((OpacityBar) popupLayout.findViewById(R.id.opacitybar));
+		opacityBar = (OpacityBar) popupLayout.findViewById(R.id.opacitybar);
+		mColorPicker.addOpacityBar(opacityBar);
+//		opacityBar.on
 		mColorPicker.setOnColorChangedListener(new OnColorChangedListener() {				
 			@Override
 			public void onColorChanged(int color) {
-				mSketchView.setStrokeColor(color);
+				int previousColor = mSketchView.getStrokeColor();
+				// Checks if alpha changed
+				if (Color.alpha(color) != Color.alpha(previousColor)) {
+					mSketchView.setStrokeAlpha(Color.alpha(color));
+				}
+				// Checks if RGB color changed
+				if (Color.red(color) != Color.red(previousColor) || Color.green(color) != Color.green(previousColor)
+						|| Color.blue(color) != Color.blue(previousColor)) {
+					mSketchView.setStrokeColor(Color.rgb(Color.red(color), Color.green(color), Color.blue(color)));
+				}
 			}
 		});
 		mColorPicker.setColor(mSketchView.getStrokeColor());

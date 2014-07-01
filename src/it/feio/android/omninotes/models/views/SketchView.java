@@ -24,10 +24,13 @@ public class SketchView extends View implements OnTouchListener {
 	public static final int STROKE = 0;
 	public static final int ERASER = 1;
 	public static final int DEFAULT_STROKE_SIZE = 7;
+	public static final int DEFAULT_STROKE_APLHA = 255;
 	public static final int DEFAULT_ERASER_SIZE = 50;
+	public static final int ALPHA_OFFSET = 30; // Due to wrong drawing
 	
 	private float strokeSize = DEFAULT_STROKE_SIZE;
 	private int strokeColor = Color.BLACK;
+	private int strokeAlpha = DEFAULT_STROKE_APLHA;
 	private float eraserSize = DEFAULT_ERASER_SIZE;
 	private int background = Color.WHITE;
 	
@@ -170,6 +173,7 @@ public class SketchView extends View implements OnTouchListener {
 			m_Paint.setStrokeWidth(eraserSize);
 		} else {
 			m_Paint.setColor(strokeColor);
+			m_Paint.setAlpha(strokeAlpha);
 			m_Paint.setStrokeWidth(strokeSize);
 		}
 
@@ -288,6 +292,16 @@ public class SketchView extends View implements OnTouchListener {
 	
 	public void setStrokeColor(int color){
 		strokeColor = color;
+	}
+
+
+	public int getStrokeAlpha() {
+		return strokeAlpha;
+	}
+
+
+	public void setStrokeAlpha(int strokeAlpha) {
+		this.strokeAlpha = strokeAlpha - ALPHA_OFFSET;
 	}
 
 
