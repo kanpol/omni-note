@@ -17,7 +17,6 @@ package it.feio.android.omninotes;
 
 import static com.nineoldandroids.view.ViewPropertyAnimator.animate;
 import it.feio.android.omninotes.async.NoteLoaderTask;
-import it.feio.android.omninotes.async.UpdaterTask;
 import it.feio.android.omninotes.db.DbHelper;
 import it.feio.android.omninotes.models.Attachment;
 import it.feio.android.omninotes.models.Category;
@@ -28,20 +27,20 @@ import it.feio.android.omninotes.models.UndoBarController;
 import it.feio.android.omninotes.models.UndoBarController.UndoListener;
 import it.feio.android.omninotes.models.adapters.NavDrawerCategoryAdapter;
 import it.feio.android.omninotes.models.adapters.NoteAdapter;
+import it.feio.android.omninotes.models.listeners.ListViewEndlessListener;
 import it.feio.android.omninotes.models.listeners.OnNotesLoadedListener;
 import it.feio.android.omninotes.models.listeners.OnViewTouchedListener;
 import it.feio.android.omninotes.models.views.InterceptorLinearLayout;
+import it.feio.android.omninotes.models.views.NotesListView;
 import it.feio.android.omninotes.utils.AppTourHelper;
 import it.feio.android.omninotes.utils.Constants;
 import it.feio.android.omninotes.utils.Display;
 import it.feio.android.omninotes.utils.Navigation;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -80,11 +79,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-
 import com.espian.showcaseview.ShowcaseView;
 import com.espian.showcaseview.ShowcaseViews.OnShowcaseAcknowledged;
 import com.google.analytics.tracking.android.Fields;
@@ -94,7 +93,6 @@ import com.neopixl.pixlui.links.RegexPatternsConstants;
 import com.neopixl.pixlui.links.UrlCompleter;
 import com.nhaarman.listviewanimations.itemmanipulation.OnDismissCallback;
 import com.nhaarman.listviewanimations.itemmanipulation.swipedismiss.SwipeDismissAdapter;
-
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import de.keyboardsurfer.android.widget.crouton.Style;
 
@@ -104,7 +102,7 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 	private static final int REQUEST_CODE_CATEGORY = 2;
 	private static final int REQUEST_CODE_CATEGORY_NOTES = 3;
 
-	private ListView listView;
+	private NotesListView listView;
 	NoteAdapter mAdapter;
 	ActionMode mActionMode;
 	ArrayList<Note> selectedNotes = new ArrayList<Note>();
@@ -124,7 +122,6 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 	private boolean undoArchive = false;
 	private boolean undoCategorize = false;
 	private Category undoCategorizeCategory = null;
-//	private Category removedCategory;
 	private SparseArray<Note> undoNotesList = new SparseArray<Note>();
 	// Used to remember removed categories from notes
 	private HashMap<Note, Category> undoCategoryList = new HashMap<Note, Category>();
@@ -469,7 +466,7 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 	 * Notes list initialization. Data, actions and callback are defined here.
 	 */
 	private void initListView() {
-		listView = (ListView) ((MainActivity)getActivity()).findViewById(R.id.notes_list);
+		listView = (NotesListView) ((MainActivity)getActivity()).findViewById(R.id.notes_list);
 
 		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		listView.setItemsCanFocus(false);
@@ -478,8 +475,6 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 		// navigation bar transparency covering items
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 			int navBarHeight = Display.getNavigationBarHeightKitkat(getActivity());
-//			listView.setPadding(listView.getPaddingLeft(), listView.getPaddingTop(), listView.getPaddingRight(),
-//					navBarHeight);
 			listFooter = new TextView(getActivity());
 			listFooter.setHeight(navBarHeight + 30);
 			listView.addFooterView(listFooter);
@@ -517,7 +512,13 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 			}
 		});
 
-		// listView.setOnTouchListener(screenTouches);
+		listView.setListViewEndlessListener(new ListViewEndlessListener() {			
+			@Override
+			public void loadData() {
+				Toast.makeText(getActivity(), "arrivato a " + listViewPosition, Toast.LENGTH_SHORT).show();				
+			}
+		});
+		
 		((InterceptorLinearLayout) ((MainActivity)getActivity()).findViewById(R.id.list_root)).setOnViewTouchedListener(screenTouches);
 	}
 
@@ -1720,5 +1721,7 @@ public class ListFragment extends Fragment implements UndoListener, OnNotesLoade
 				});
 			builder.create().show();
 		}
+
+
 
 }

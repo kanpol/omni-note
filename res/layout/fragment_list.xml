@@ -50,7 +50,7 @@
                 android:src="@drawable/ic_action_cancel" />
         </LinearLayout>
 
-        <ListView
+        <it.feio.android.omninotes.models.views.NotesListView
             android:id="@+id/notes_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -63,8 +63,7 @@
             android:listSelector="@drawable/icon_selector"
             android:scrollbarStyle="outsideOverlay"
             android:scrollbarThumbVertical="@drawable/scroll_bar" 
-            android:fastScrollEnabled="true" >
-        </ListView>
+            android:fastScrollEnabled="true" />
 
         <LinearLayout
             android:layout_width="match_parent"

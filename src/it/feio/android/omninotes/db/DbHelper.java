@@ -22,7 +22,6 @@ import it.feio.android.omninotes.models.Stats;
 import it.feio.android.omninotes.utils.AssetUtils;
 import it.feio.android.omninotes.utils.Constants;
 import it.feio.android.omninotes.utils.Navigation;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,7 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,7 +38,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
-
 import com.neopixl.pixlui.links.RegexPatternsConstants;
 
 public class DbHelper extends SQLiteOpenHelper {
@@ -51,6 +48,8 @@ public class DbHelper extends SQLiteOpenHelper {
 	private static final int DATABASE_VERSION = 453;
 	// Sql query file directory
     private static final String SQL_DIR = "sql" ;
+    
+    private static final int RESULT_TIMIT = 50;
     
 	// Notes table name
     public static final String TABLE_NOTES = "notes";
@@ -97,6 +96,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	private final Context mContext;
 	private final SharedPreferences prefs;
+	private int resultSetStart = 0;
 	
 	private static DbHelper instance = null;
 	
@@ -108,6 +108,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	      return instance;
 	   }
 
+	@SuppressWarnings("static-access")
 	private DbHelper(Context mContext) {
 		super(mContext, DATABASE_NAME, null, DATABASE_VERSION);
 		this.mContext = mContext;
@@ -168,7 +169,7 @@ public class DbHelper extends SQLiteOpenHelper {
 	// Inserting or updating single note
 	public Note updateNote(Note note, boolean updateLastModification) {
 		
-		long resNote, resAttachment;
+		long resNote;
 		SQLiteDatabase db = this.getWritableDatabase();
 		
 		// To ensure note and attachments insertions are atomical and boost performances transaction are used
@@ -246,6 +247,18 @@ public class DbHelper extends SQLiteOpenHelper {
 		note.setLastModification(values.getAsLong(KEY_LAST_MODIFICATION));	
 		
 		return note;
+	}
+	
+	
+	
+	/**
+	 * Used to retrieve limited results. Chainable method.
+	 * @param start
+	 * @return 
+	 */
+	public DbHelper setResultSetStart(int start) {
+		resultSetStart = start;
+      return instance;
 	}
 
 	
@@ -425,7 +438,8 @@ public class DbHelper extends SQLiteOpenHelper {
 					+ " FROM " + TABLE_NOTES 
 					+ " LEFT JOIN " + TABLE_CATEGORY + " USING( " + KEY_CATEGORY + ") "						
 					+ whereCondition
-					+ (order ? " ORDER BY " + sort_column + sort_order : "");
+					+ (order ? " ORDER BY " + sort_column + sort_order : "")
+					+ " LIMIT " + resultSetStart + "," + RESULT_TIMIT;
 
 		Log.d(Constants.TAG, "Query: " + query);
 
@@ -466,6 +480,9 @@ public class DbHelper extends SQLiteOpenHelper {
 			}
 			
 		} finally {
+			// Resets start point to retrieve results
+			resultSetStart = 0;
+			
 			if (cursor != null)
 				cursor.close();
 //			if (db != null)
